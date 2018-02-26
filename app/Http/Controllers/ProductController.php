@@ -6,8 +6,10 @@ use App\Http\Requests\ProductRequest;
 use App\Http\Resources\Product\ProductCollection;
 use App\Http\Resources\Product\ProductResource;
 use App\Model\Product;
+use App\Exceptions\ProductNotBelongsToUser;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -93,6 +95,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
+        $this->productUserCheck($product);
         $product->update($request->all());
 
         return response([
@@ -113,5 +116,12 @@ class ProductController extends Controller
         $product->delete();
 
         return response(null,Response::HTTP_NO_CONTENT);
+    }
+
+    public function productUserCheck(Product $product)
+    {
+        if(Auth::id() !== $product->user_id){
+            throw  new ProductNotBelongsToUser;
+        }
     }
 }
